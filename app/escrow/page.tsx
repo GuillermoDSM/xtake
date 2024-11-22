@@ -13,13 +13,21 @@ import { ProgressSteps } from "@/components/ui/progress-steps"
 import { Badge } from "@/components/ui/badge"
 import { CosmosLogo, EthereumLogo, PolkadotLogo } from "@/components/network-logos"
 
+interface Network {
+  id: string
+  name: string
+  icon: React.ComponentType<{ className?: string }>
+  apy: string
+  isAvailable: boolean
+}
+
 export default function EscrowPage() {
   const [amount, setAmount] = useState(1000)
   const [selectedNetwork, setSelectedNetwork] = useState("cosmos")
   const [isDeploying, setIsDeploying] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
 
-  const networks = [
+  const networks: Network[] = [
     { id: "cosmos", name: "Cosmos (ATOM)", icon: CosmosLogo, apy: "19.95%", isAvailable: true },
     { id: "ethereum", name: "Ethereum (ETH)", icon: EthereumLogo, apy: "5.20%", isAvailable: false },
     { id: "polkadot", name: "Polkadot (DOT)", icon: PolkadotLogo, apy: "10.50%", isAvailable: false },
@@ -28,38 +36,45 @@ export default function EscrowPage() {
   const steps = [
     { 
       label: "Preparing Escrow", 
-      status: currentStep >= 0 ? "completed" : "pending" as const 
+      status: currentStep >= 0 ? "completed" as const : "pending" as const 
     },
     { 
       label: "Deploying Validator Node", 
-      status: currentStep >= 1 ? "completed" : "pending" as const 
+      status: currentStep >= 1 ? "completed" as const : "pending" as const 
     },
     { 
       label: "Registering with Network", 
-      status: currentStep >= 2 ? "completed" : "pending" as const 
+      status: currentStep >= 2 ? "completed" as const : "pending" as const 
     },
   ]
 
   const handleDeploy = () => {
     setIsDeploying(true)
-    // Simulate deployment process
     let step = 0
     const interval = setInterval(() => {
       if (step < 3) {
         setCurrentStep(step)
-        steps[step].status = "completed"
         step++
       } else {
         clearInterval(interval)
         setIsDeploying(false)
       }
     }, 2000)
+
+    return () => clearInterval(interval)
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value)
+    if (!isNaN(value)) {
+      setAmount(Math.min(Math.max(value, 0), 100000))
+    }
   }
 
   return (
     <div className="min-h-screen p-8">
       <Button variant="ghost" asChild className="mb-8">
-        <Link href="/">
+        <Link href="/" aria-label="Back to Dashboard">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
@@ -75,7 +90,7 @@ export default function EscrowPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>How much XRP would you like to stake?</Label>
+              <Label htmlFor="amount-input">How much XRP would you like to stake?</Label>
               <div className="flex items-center gap-4">
                 <Slider
                   value={[amount]}
@@ -83,17 +98,16 @@ export default function EscrowPage() {
                   max={100000}
                   step={100}
                   className="flex-1"
+                  aria-label="Stake amount"
                 />
                 <Input
+                  id="amount-input"
                   type="number"
                   value={amount}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    const value = parseInt(e.target.value)
-                    if (!isNaN(value)) {
-                      setAmount(Math.min(Math.max(value, 0), 100000))
-                    }
-                  }}
+                  onChange={handleAmountChange}
                   className="w-24"
+                  min={0}
+                  max={100000}
                 />
               </div>
             </div>
