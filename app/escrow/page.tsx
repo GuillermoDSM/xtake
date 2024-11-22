@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Atom, Coins, EclipseIcon as Ethereum, Check } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -26,9 +26,18 @@ export default function EscrowPage() {
   ]
 
   const steps = [
-    { label: "Preparing Escrow", status: "pending" as const },
-    { label: "Deploying Validator Node", status: "pending" as const },
-    { label: "Registering with Network", status: "pending" as const },
+    { 
+      label: "Preparing Escrow", 
+      status: currentStep >= 0 ? "completed" : "pending" as const 
+    },
+    { 
+      label: "Deploying Validator Node", 
+      status: currentStep >= 1 ? "completed" : "pending" as const 
+    },
+    { 
+      label: "Registering with Network", 
+      status: currentStep >= 2 ? "completed" : "pending" as const 
+    },
   ]
 
   const handleDeploy = () => {

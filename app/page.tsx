@@ -1,9 +1,8 @@
-import { Atom, Coins, EclipseIcon as Ethereum } from 'lucide-react'
+import { Coins } from 'lucide-react'
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { NetworkCard } from "@/components/network-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MainNav } from "@/components/main-nav"
 import { Overview } from "@/components/overview"
