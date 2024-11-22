@@ -33,6 +33,14 @@ export function XummLogin() {
         throw new Error('Popup blocked')
       }
 
+      const popupCheckInterval = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(popupCheckInterval)
+          setIsLoading(false)
+          socket.close()
+        }
+      }, 1000)
+
       if (!data.socket || typeof data.socket !== 'string') {
         throw new Error('Invalid WebSocket URL')
       }
@@ -44,6 +52,7 @@ export function XummLogin() {
           const message = JSON.parse(event.data)
           
           if (message.signed || (message.payload && message.payload.meta && message.payload.meta.signed)) {
+            clearInterval(popupCheckInterval)
             const callbackResponse = await fetch(`/api/auth/xumm/callback?payloadId=${data.payloadId}`)
             const callbackData = await callbackResponse.json()
             
@@ -63,10 +72,12 @@ export function XummLogin() {
 
       socket.onerror = (error) => {
         console.error('WebSocket error:', error)
+        clearInterval(popupCheckInterval)
         setIsLoading(false)
       }
 
       socket.onclose = () => {
+        clearInterval(popupCheckInterval)
         setIsLoading(false)
       }
       
