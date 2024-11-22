@@ -7,6 +7,7 @@ import { NetworkCard } from "@/components/network-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MainNav } from "@/components/main-nav"
 import { Overview } from "@/components/overview"
+import { XummLogin } from '@/components/XummLogin'
 
 export default function DashboardPage() {
   return (
@@ -19,6 +20,7 @@ export default function DashboardPage() {
               <Link href="/escrow">View Escrow & Staking</Link>
             </Button>
             <Button disabled>Claim Rewards</Button>
+            <XummLogin />
           </div>
         </div>
       </div>

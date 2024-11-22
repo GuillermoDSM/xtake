@@ -24,7 +24,8 @@
     "react-dom": "^18",
     "recharts": "^2.13.3",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "xumm-sdk": "^1.11.2"
   },
   "devDependencies": {
     "@types/node": "^20",
