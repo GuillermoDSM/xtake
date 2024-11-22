@@ -4,10 +4,11 @@ import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 
 type Theme = "dark" | "light" | "system"
+type Attribute = "class" | "data-theme" | "data-mode"
 
 interface ThemeProviderProps {
   children: React.ReactNode
-  attribute?: string
+  attribute?: Attribute | Attribute[]
   defaultTheme?: Theme
   enableSystem?: boolean
   storageKey?: string
