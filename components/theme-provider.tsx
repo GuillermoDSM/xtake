@@ -2,11 +2,18 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
-import type { ThemeProviderProps as NextThemeProviderProps } from "next-themes/dist/types"
 
-interface ThemeProviderProps extends Omit<NextThemeProviderProps, 'attribute'> {
+type Theme = "dark" | "light" | "system"
+
+interface ThemeProviderProps {
   children: React.ReactNode
-  attribute?: 'class' | 'data-theme' | 'data-mode'
+  attribute?: string
+  defaultTheme?: Theme
+  enableSystem?: boolean
+  storageKey?: string
+  forcedTheme?: Theme
+  disableTransitionOnChange?: boolean
+  themes?: Theme[]
 }
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
