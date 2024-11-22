@@ -18,30 +18,27 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [userAddress, setUserAddress] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/check')
-        const data = await response.json()
-        
-        if (data.authenticated) {
-          setIsAuthenticated(true)
-          setUserAddress(data.address)
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-      } finally {
-        setIsLoading(false)
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/check')
+      const data = await response.json()
+      
+      if (data.authenticated) {
+        setIsAuthenticated(true)
+        setUserAddress(data.address)
       }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    } finally {
+      setIsLoading(false)
     }
-
-    checkAuth()
-  }, [])
+  }
 
   const logout = async () => {
     try {
@@ -54,6 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  useEffect(() => {
+    setMounted(true)
+    checkAuth()
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
     <AuthContext.Provider value={{ isAuthenticated, isLoading, logout, userAddress }}>
       {children}
@@ -61,4 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export const useAuth = () => useContext(AuthContext) 
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+} 
