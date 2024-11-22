@@ -12,6 +12,7 @@ interface ThemeProviderProps {
   forcedTheme?: string
   disableTransitionOnChange?: boolean
   themes?: string[]
+  suppressHydrationWarning?: boolean
 }
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
