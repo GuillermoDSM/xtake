@@ -33,19 +33,14 @@ export async function POST(request: Request) {
       // Calcular el finish_after (tiempo actual + periodo de bloqueo en segundos)
       const finishAfter = Math.floor(Date.now() / 1000) + (lockupPeriod * 24 * 60 * 60)
 
-      // Crear el payload de la transacción
-      const txPayload = {
+      // Create XUMM request
+      const request = await xumm.payload.create({
         TransactionType: 'EscrowCreate',
         Account: userToken.value,
         Destination: userToken.value,
         Amount: amountInDrops,
         FinishAfter: finishAfter,
-        Fee: '12'
-      }
-
-      // Crear la solicitud en XUMM
-      const request = await xumm.payload.create({
-        txjson: txPayload,
+        Fee: '12',
         options: {
           expire: 5,
           submit: true
