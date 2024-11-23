@@ -115,7 +115,7 @@ export function XummLogin() {
         </>
       ) : (
         <>
-          <span>Connect with XUMM</span>
+          <span>Connect with XAMAN</span>
         </>
       )}
     </Button>

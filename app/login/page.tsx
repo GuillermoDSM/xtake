@@ -20,7 +20,7 @@ export default function LoginPage() {
             />
           </CardTitle>
           <CardDescription>
-            Connect your XUMM wallet to continue
+            Connect your XAMAN wallet to continue
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-4">
