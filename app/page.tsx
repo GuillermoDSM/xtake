@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from 'react'
 import { Coins, Server } from 'lucide-react'
 import Link from "next/link"
 
@@ -8,6 +11,79 @@ import { Overview } from "@/components/overview"
 import { XummLogin } from '@/components/XummLogin'
 
 export default function DashboardPage() {
+  const [lockedAmount, setLockedAmount] = useState<number>(0)
+  const [escrows, setEscrows] = useState<any[]>([])
+  const [isUnlocking, setIsUnlocking] = useState(false)
+
+  useEffect(() => {
+    fetchEscrowData()
+  }, [])
+
+  const fetchEscrowData = async () => {
+    const response = await fetch('/api/escrow/fetch')
+    const data = await response.json()
+    console.log('Fetched escrow data:', data)
+    if (data.totalLocked) {
+      setLockedAmount(data.totalLocked)
+      setEscrows(data.escrows)
+    }
+  }
+
+  const handleUnlock = async (owner: string, seq: number) => {
+    try {
+      setIsUnlocking(true)
+      console.log('Attempting to unlock escrow:', { owner, seq })
+      
+      const response = await fetch('/api/escrow/finish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ owner, seq }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to unlock escrow')
+      }
+
+      const data = await response.json()
+      console.log('Unlock response:', data)
+
+      const popup = window.open(data.url, 'xumm-finish', 'width=600,height=700')
+      
+      if (!popup) {
+        throw new Error('Popup blocked')
+      }
+
+      const socket = new WebSocket(data.socket)
+      
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data)
+        console.log('WebSocket message:', message)
+        
+        if (message.signed) {
+          socket.close()
+          if (popup) popup.close()
+          fetchEscrowData() // Refresh data after successful unlock
+        }
+      }
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error)
+        setIsUnlocking(false)
+      }
+
+      socket.onclose = () => {
+        setIsUnlocking(false)
+      }
+
+    } catch (error) {
+      console.error('Unlock failed:', error)
+      setIsUnlocking(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="border-b">
@@ -35,7 +111,17 @@ export default function DashboardPage() {
               <Coins className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10,000 XRP</div>
+              <div className="text-2xl font-bold">{lockedAmount.toFixed(2)} XRP</div>
+              {escrows.length > 0 && (
+                <Button
+                  onClick={() => handleUnlock(escrows[0].Account, escrows[0].SequenceNumber)}
+                  disabled={isUnlocking}
+                  className="mt-4"
+                  variant="destructive"
+                >
+                  {isUnlocking ? "Unlocking..." : "Unlock Funds"}
+                </Button>
+              )}
             </CardContent>
           </Card>
           <Card>

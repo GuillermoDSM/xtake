@@ -20,32 +20,20 @@ export async function POST(request: Request) {
       )
     }
 
-    const { amount, lockupPeriod } = await request.json()
-    
-    // Conectar al cliente XRPL (testnet)
+    const { owner, seq } = await request.json()
+
+    // Connect to XRPL client
     const client = new Client('wss://s.altnet.rippletest.net:51233')
     await client.connect()
-    
+
     try {
-      // Convertir el monto a drops (1 XRP = 1,000,000 drops)
-      const amountInDrops = String(Math.floor(amount * 1000000))
-      
-      // Calcular el finish_after (tiempo actual + periodo de bloqueo en segundos)
-      const finishAfter = Math.floor(Date.now() / 1000) + (lockupPeriod * 24 * 60 * 60)
-
-      // Crear el payload de la transacción
-      const txPayload = {
-        TransactionType: 'EscrowCreate',
-        Account: userToken.value,
-        Destination: userToken.value,
-        Amount: amountInDrops,
-        FinishAfter: finishAfter,
-        Fee: '12'
-      }
-
-      // Crear la solicitud en XUMM
+      // Create XUMM request for EscrowFinish
       const request = await xumm.payload.create({
-        txjson: txPayload,
+        TransactionType: 'EscrowFinish',
+        Account: userToken.value,
+        Owner: owner,
+        OfferSequence: parseInt(seq),
+        Fee: '12',
         options: {
           expire: 5,
           submit: true
@@ -67,9 +55,9 @@ export async function POST(request: Request) {
     }
 
   } catch (error) {
-    console.error('Escrow creation failed:', error)
+    console.error('Escrow finish failed:', error)
     return NextResponse.json(
-      { error: 'Failed to create escrow' },
+      { error: 'Failed to create finish request' },
       { status: 500 }
     )
   }
