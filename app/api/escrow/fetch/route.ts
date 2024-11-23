@@ -2,6 +2,14 @@ import { Client } from 'xrpl'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+interface EscrowObject {
+  Amount: string
+  Account: string
+  Destination: string
+  FinishAfter: number
+  Sequence: number
+}
+
 export async function GET() {
   const cookieStore = cookies()
   const userToken = cookieStore.get('auth_token')
@@ -27,7 +35,7 @@ export async function GET() {
     console.log('Escrow objects:', response.result.account_objects)
 
     const escrows = response.result.account_objects
-    const totalLocked = escrows.reduce((sum: number, escrow: any) => 
+    const totalLocked = escrows.reduce((sum: number, escrow: EscrowObject) => 
       sum + Number(escrow.Amount), 0) / 1000000 // Convert from drops to XRP
 
     return NextResponse.json({ 

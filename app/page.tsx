@@ -10,9 +10,17 @@ import { MainNav } from "@/components/main-nav"
 import { Overview } from "@/components/overview"
 import { XummLogin } from '@/components/XummLogin'
 
+interface EscrowObject {
+  Amount: string
+  Account: string
+  Destination: string
+  FinishAfter: number
+  Sequence: number
+}
+
 export default function DashboardPage() {
   const [lockedAmount, setLockedAmount] = useState<number>(0)
-  const [escrows, setEscrows] = useState<any[]>([])
+  const [escrows, setEscrows] = useState<EscrowObject[]>([])
   const [isUnlocking, setIsUnlocking] = useState(false)
 
   useEffect(() => {
@@ -114,7 +122,7 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold">{lockedAmount.toFixed(2)} XRP</div>
               {escrows.length > 0 && (
                 <Button
-                  onClick={() => handleUnlock(escrows[0].Account, escrows[0].SequenceNumber)}
+                  onClick={() => handleUnlock(escrows[0].Account, escrows[0].Sequence)}
                   disabled={isUnlocking}
                   className="mt-4"
                   variant="destructive"
