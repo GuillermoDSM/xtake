@@ -34,7 +34,9 @@ export async function GET() {
 
     console.log('Escrow objects:', response.result.account_objects)
 
-    const escrows: EscrowObject[] = response.result.account_objects || []
+    const escrows: EscrowObject[] = response.result.account_objects
+      .filter(obj => obj.LedgerEntryType === 'Escrow')
+      .map(obj => obj as unknown as EscrowObject) || []
     const totalLocked = escrows.reduce((sum: number, escrow: EscrowObject) => 
       sum + Number(escrow.Amount), 0) / 1000000 // Convert from drops to XRP
 
