@@ -25,6 +25,7 @@
     "recharts": "^2.13.3",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "xrpl": "^4.0.0",
     "xumm-sdk": "^1.11.2"
   },
   "devDependencies": {

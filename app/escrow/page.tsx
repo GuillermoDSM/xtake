@@ -35,33 +35,83 @@ export default function EscrowPage() {
 
   const steps = [
     { 
-      label: "Preparing Escrow", 
+      label: "Creating XRP Escrow", 
       status: currentStep >= 0 ? "completed" as const : "pending" as const 
     },
     { 
-      label: "Deploying Validator Node", 
+      label: "Confirming Transaction", 
       status: currentStep >= 1 ? "completed" as const : "pending" as const 
     },
     { 
-      label: "Registering with Network", 
+      label: "Finalizing Setup", 
       status: currentStep >= 2 ? "completed" as const : "pending" as const 
     },
   ]
 
-  const handleDeploy = () => {
-    setIsDeploying(true)
-    let step = 0
-    const interval = setInterval(() => {
-      if (step < 3) {
-        setCurrentStep(step)
-        step++
-      } else {
-        clearInterval(interval)
-        setIsDeploying(false)
-      }
-    }, 2000)
+  const handleDeploy = async () => {
+    try {
+      setIsDeploying(true)
+      setCurrentStep(0)
 
-    return () => clearInterval(interval)
+      // Crear el escrow
+      const response = await fetch('/api/escrow/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount,
+          lockupPeriod: 90 // 3 meses en días
+        }),
+      })
+
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Abrir XUMM para firmar
+      const popup = window.open(
+        data.url,
+        'xumm-escrow',
+        'width=600,height=700,left=200,top=100'
+      )
+
+      if (!popup) {
+        throw new Error('Popup blocked')
+      }
+
+      // Monitorear el estado de la firma
+      const socket = new WebSocket(data.socket)
+      
+      socket.onmessage = async (event) => {
+        const message = JSON.parse(event.data)
+        
+        if (message.signed) {
+          setCurrentStep(1)
+          // Aquí iría la lógica para desplegar el nodo validador
+          setTimeout(() => {
+            setCurrentStep(2)
+            setTimeout(() => {
+              socket.close()
+              if (popup) popup.close()
+              setIsDeploying(false)
+            }, 2000)
+          }, 2000)
+        } else if (message.rejected) {
+          throw new Error('Transaction rejected')
+        }
+      }
+
+      socket.onerror = () => {
+        throw new Error('WebSocket error')
+      }
+
+    } catch (error) {
+      console.error('Deployment failed:', error)
+      setIsDeploying(false)
+    }
   }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +131,7 @@ export default function EscrowPage() {
       </Button>
 
       <div className="mx-auto max-w-2xl space-y-8">
-        <h1 className="text-3xl font-bold">Manage Your Staking Process</h1>
+        <h1 className="text-3xl font-bold">Your Staking Process</h1>
 
         <Card>
           <CardHeader>
@@ -95,8 +145,8 @@ export default function EscrowPage() {
                 <Slider
                   value={[amount]}
                   onValueChange={([value]) => setAmount(value)}
-                  max={100000}
-                  step={100}
+                  max={500}
+                  step={10}
                   className="flex-1"
                   aria-label="Stake amount"
                 />
